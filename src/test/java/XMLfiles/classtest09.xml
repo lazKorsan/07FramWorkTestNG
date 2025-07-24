@@ -1,0 +1,16 @@
+
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<suite name= "smoke test suiti " >
+    <test name= "class testleri">
+        <classes>
+
+
+            <class name="tests.K22_testNG_frameworkOlusturma.D02_priority_dependsOnMethods.C02_DependsOnMethods"></class>
+            <class name="tests.K22_testNG_frameworkOlusturma.D02_priority_dependsOnMethods.C02_PageKullanimi"></class>
+
+
+        </classes>
+    </test>
+
+</suite>

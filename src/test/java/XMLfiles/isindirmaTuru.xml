@@ -1,0 +1,18 @@
+
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+
+<suite name= "smoke test suiti " >
+    <test name= "class08 testleri">
+        <classes>
+
+
+            <class name="ZDonguselTestOotmasyonu.onBellekIsındırma"></class>
+            <class name="tests.K22_testNG_frameworkOlusturma.D03_pageObjectModel_POM.C01_BasicDriverClassKullanimi"></class>
+
+
+
+
+        </classes>
+    </test>
+
+</suite>

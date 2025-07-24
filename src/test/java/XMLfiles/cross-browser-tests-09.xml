@@ -1,0 +1,35 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="Cross Browser Regression Suite" parallel="tests">
+
+    <!-- ================= CHROME TESTLERİ ================= -->
+    <test name="Regression Testleri - Chrome">
+        <!-- Bu test bloğuna "browser" adında bir parametre gönderiyoruz -->
+        <parameter name="browser" value="chrome"/>
+        <groups>
+            <run>
+                <include name="regression"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="tests.K22_testNG_frameworkOlusturma.D02_priority_dependsOnMethods.C01_Priority"/>
+            <!-- Diğer regression test sınıflarını buraya ekleyebilirsiniz -->
+        </classes>
+    </test>
+
+    <!-- ================= FIREFOX TESTLERİ ================= -->
+    <test name="Regression Testleri - Firefox">
+        <!-- Bu test bloğuna "browser" adında bir parametre gönderiyoruz -->
+        <parameter name="browser" value="firefox"/>
+        <groups>
+            <run>
+                <include name="regression"/>
+            </run>
+        </groups>
+        <classes>
+            <class name="tests.K22_testNG_frameworkOlusturma.D02_priority_dependsOnMethods.C01_Priority"/>
+            <!-- Diğer regression test sınıflarını buraya ekleyebilirsiniz -->
+        </classes>
+    </test>
+
+</suite>

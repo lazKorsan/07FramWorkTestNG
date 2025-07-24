@@ -1,0 +1,9 @@
+<!-- ... (suite ve test tag'leri) ... -->
+<groups>
+    <run>
+        <include name="smoke"/>
+        <!-- Ama "bozuk_test" grubundakileri çalıştırma -->
+        <exclude name="bozuk_test"/>
+    </run>
+</groups>
+        <!-- ... (classes tag'leri) ... -->

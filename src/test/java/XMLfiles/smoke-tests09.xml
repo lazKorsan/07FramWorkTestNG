@@ -1,0 +1,18 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="Proje Smoke Test Suite">
+    <test name="Smoke Testler">
+        <groups>
+            <run>
+                <!-- Sadece "smoke" grubuna dahil olan testleri çalıştır -->
+                <include name="smoke"/>
+            </run>
+        </groups>
+
+        <classes>
+            <!-- Testlerin hangi sınıflarda olduğunu belirtmemiz yeterli -->
+            <class name="tests.K22_testNG_frameworkOlusturma.D02_priority_dependsOnMethods.C01_Priority"/>
+            <class name="tests.K22_testNG_frameworkOlusturma.D02_priority_dependsOnMethods.C02_PageKullanimi"/>
+        </classes>
+    </test>
+</suite>

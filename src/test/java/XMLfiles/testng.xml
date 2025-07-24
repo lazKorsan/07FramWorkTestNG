@@ -1,0 +1,16 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="Proje Test Suite">
+    <test name="Farkli Testlerin Calistirilmasi">
+        <classes>
+            <!-- Sadece C02_PageKullanimi testini çalıştır -->
+            <class name="tests.K22_testNG_frameworkOlusturma.D02_priority_dependsOnMethods.C02_PageKullanimi"/>
+            <class name="tests.K22_testNG_frameworkOlusturma.D01_TestNG_tanitim.C01"></class>
+
+            <!-- İstersek C01_Priority testini de buraya ekleyebiliriz -->
+            <!--
+            <class name="tests.K22_testNG_frameworkOlusturma.D02_priority_dependsOnMethods.C01_Priority"/>
+            -->
+        </classes>
+    </test>
+</suite>
