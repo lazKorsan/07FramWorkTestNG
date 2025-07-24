@@ -1,4 +1,4 @@
-package tests.ZScreenShots;
+package ZScreenShots;
 
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.OutputType;
