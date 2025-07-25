@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ReusableMethods {
 
@@ -244,5 +245,43 @@ public class ReusableMethods {
             System.err.println("Tam sayfa ekran görüntüsü alınırken bir hata oluştu: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    // =================================================================================
+    // ===> YENİ VE MODERNLEŞTİRİLMİŞ METOT <===
+    // =================================================================================
+
+    /**
+     * Verilen bir WebElement listesindeki her bir elementin metnini alarak
+     * bu metinlerden oluşan bir String listesi döndürür.
+     * Bu işlem Java 8 Stream API kullanılarak daha verimli bir şekilde yapılır.
+     *
+     * @param webElementList Metinleri alınacak WebElement'leri içeren liste.
+     * @return Elementlerin metinlerini içeren yeni bir String listesi.
+     */
+    public static List<String> getElementsText(List<WebElement> webElementList) {
+        return webElementList.stream()                // 1. Listeyi bir akışa (stream) çevir
+                .map(WebElement::getText) // 2. Her bir WebElement'i metnine (.getText()) dönüştür
+                .collect(Collectors.toList()); // 3. Dönüştürülen metinleri bir listede topla
+    }
+
+    public static String raporaResimEkle(String testIsmi) throws IOException {
+
+        LocalDateTime localDateTime = LocalDateTime.now();
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("_yyMMdd_HHmmss");
+        String date = localDateTime.format(format); // _241219_080623
+
+        // 1.adim tss objesi olusturalim
+        //   ve takesScreenshot objesi ile gecici resmi kaydedelim
+        TakesScreenshot takesScreenshot = (TakesScreenshot) Driver.getDriver();
+        File geciciDosya = takesScreenshot.getScreenshotAs(OutputType.FILE);
+
+        // Asil resmi kaydedecegimiz dosya yolunu olusturup
+        // bu dosya yolu ile resmi kaydedecegimiz asil dosyayi olusturalim
+        String dosyaYolu = System.getProperty("user.dir") + "/test-output/Screenshots/" + testIsmi + date + ".jpg";
+        File asilResimDosyasi = new File(dosyaYolu);
+        // gecici dosyayi asil dosyaya kopyalayalim
+        FileUtils.copyFile(geciciDosya, asilResimDosyasi);
+        return dosyaYolu;
     }
 }

@@ -1,4 +1,4 @@
-package tests.K23_testNG_Assertions;
+package ZZZSoftAssert;
 
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
@@ -11,7 +11,7 @@ import utilities.ReusableMethods;
 
 import java.util.List;
 
-public class C03_SoftAssert {
+public class softAssert {
 
     @Test
     public void test01(){
