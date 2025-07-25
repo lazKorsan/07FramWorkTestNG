@@ -1,12 +1,15 @@
 package utilities;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,7 +17,7 @@ import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -22,155 +25,183 @@ import java.util.stream.Collectors;
 
 public class ReusableMethods {
 
+    /**
+     * Test sırasında belirli bir süre beklemek için kullanılır.
+     * NOT: Bu, 'explicit wait' yerine geçmez. Sadece geçici veya demo amaçlı kullanılmalıdır.
+     *
+     * @param saniye Beklenecek süre (saniye cinsinden).
+     */
     public static void bekle(int saniye) {
-
         try {
-            Thread.sleep(saniye * 1000);
+            Thread.sleep(saniye * 1000L);
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            // InterruptedException durumunda, thread'in kesintiye uğradığını belirtmek iyi bir pratiktir.
+            Thread.currentThread().interrupt();
+            System.err.println("Thread bekleme sırasında kesintiye uğradı: " + e.getMessage());
         }
-
-
     }
 
-    public static List<String> getStringList(List<WebElement> kaynakList) {
-
-        List<String> stringList = new ArrayList<>();
-
-        for (WebElement eachElement : kaynakList
-        ) {
-
-            stringList.add(eachElement.getText());
-
-        }
-
-
-        return stringList;
+    /**
+     * Verilen bir WebElement listesindeki her bir elementin metnini alarak
+     * bu metinlerden oluşan bir String listesi döndürür.
+     *
+     * @param webElementList Metinleri alınacak WebElement'leri içeren liste.
+     * @return Elementlerin metinlerini içeren yeni bir String listesi.
+     */
+    public static List<String> getElementsText(List<WebElement> webElementList) {
+        return webElementList.stream()
+                .map(WebElement::getText)
+                .collect(Collectors.toList());
     }
 
-    public static void switchWindowByUrl(WebDriver driver, String hedefUrl) {
+    /**
+     * Belirtilen WebElement'in ekran görüntüsünü alır ve Masaüstündeki 'testNG' klasörüne kaydeder.
+     * Dosya adı, zaman damgası ile eşsiz hale getirilir.
+     *
+     * @param element  Ekran görüntüsü alınacak WebElement.
+     * @param fileName Kaydedilecek dosyanın temel adı.
+     */
+    public static void getWebElementScreenshot(WebElement element, String fileName) {
+        try {
+            String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String finalFileName = fileName + "_" + timeStamp + ".png";
+            // Not: Bu yol, sadece sizin bilgisayarınızda çalışacaktır.
+            String directoryPath = "C:/Users/Hp/OneDrive/Desktop/testNG";
+            Path fullPath = Paths.get(directoryPath, finalFileName);
 
-        Set<String> acikWindowlarinWhdSeti = driver.getWindowHandles();
-        for (String eachWhd : acikWindowlarinWhdSeti
-        ) {
-            // once bizim oglanin getirdigi whd ile bir window'a gecis yapalim
-            driver.switchTo().window(eachWhd);
-            String gecilenSayfaUrl = driver.getCurrentUrl();
+            Files.createDirectories(Paths.get(directoryPath));
+            File sourceFile = element.getScreenshotAs(OutputType.FILE);
+            Files.copy(sourceFile.toPath(), fullPath);
+            System.out.println("Element ekran görüntüsü başarıyla kaydedildi: " + fullPath);
+        } catch (IOException e) {
+            System.err.println("Element ekran görüntüsü alınırken bir hata oluştu: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
 
-            if (gecilenSayfaUrl.equals(hedefUrl)) {
+    /**
+     * Tüm sayfanın ekran görüntüsünü alır ve Masaüstündeki 'testNG' klasörüne kaydeder.
+     * Dosya adı, zaman damgası ile eşsiz hale getirilir.
+     *
+     * @param fileName Kaydedilecek ekran görüntüsü için verilecek temel isim.
+     */
+    public static void takeFullPageScreenshot(String fileName) {
+        try {
+            TakesScreenshot tss = (TakesScreenshot) Driver.getDriver();
+            String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String finalFileName = fileName + "_" + timeStamp + ".png";
+            // Not: Bu yol, sadece sizin bilgisayarınızda çalışacaktır.
+            String directoryPath = "C:/Users/Hp/OneDrive/Desktop/testNG";
+            Path fullPath = Paths.get(directoryPath, finalFileName);
+
+            Files.createDirectories(Paths.get(directoryPath));
+            File sourceFile = tss.getScreenshotAs(OutputType.FILE);
+            Files.copy(sourceFile.toPath(), fullPath);
+            System.out.println("Tam sayfa ekran görüntüsü başarıyla kaydedildi: " + fullPath);
+        } catch (IOException e) {
+            System.err.println("Tam sayfa ekran görüntüsü alınırken bir hata oluştu: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Hata durumunda ExtentReports'a eklemek için ekran görüntüsü alır.
+     * Görüntüyü projenin altındaki 'test-output/Screenshots' klasörüne kaydeder
+     * ve raporlama için dosya yolunu String olarak döndürür.
+     *
+     * @param testName Raporlanacak testin adı, dosya adında kullanılacak.
+     * @return Kaydedilen ekran görüntüsünün dosya yolu.
+     */
+    public static String addScreenshotToReport(String testName) {
+        try {
+            String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+            String fileName = testName + "_" + timeStamp + ".png";
+            String directoryPath = System.getProperty("user.dir") + "/test-output/Screenshots/";
+            Path fullPath = Paths.get(directoryPath, fileName);
+
+            Files.createDirectories(Paths.get(directoryPath));
+
+            TakesScreenshot ts = (TakesScreenshot) Driver.getDriver();
+            File source = ts.getScreenshotAs(OutputType.FILE);
+
+            Files.copy(source.toPath(), fullPath);
+            // Rapora eklemek için göreceli yolu döndürmek daha taşınabilir olabilir.
+            return "Screenshots/" + fileName;
+        } catch (IOException e) {
+            System.err.println("Rapora ekran görüntüsü eklenirken hata oluştu: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Açık olan pencereler arasında, hedef URL'e sahip olan pencereye geçiş yapar.
+     *
+     * @param hedefUrl Geçiş yapılmak istenen pencerenin tam URL'i.
+     */
+    public static void switchWindowByUrl(String hedefUrl) {
+        Set<String> allWindowHandles = Driver.getDriver().getWindowHandles();
+        for (String eachHandle : allWindowHandles) {
+            Driver.getDriver().switchTo().window(eachHandle);
+            if (Driver.getDriver().getCurrentUrl().equals(hedefUrl)) {
                 break;
             }
         }
     }
 
-    public static void switchWindowByTitle(WebDriver driver, String hedefTitle) {
-        Set<String> acikWindowlarinWhdSeti = driver.getWindowHandles();
-        for (String eachWhd : acikWindowlarinWhdSeti
-        ) {
-            // once bizim oglanin getirdigi whd ile bir window'a gecis yapalim
-            driver.switchTo().window(eachWhd);
-            String gecilenSayfaTitle = driver.getTitle();
-
-            if (gecilenSayfaTitle.equals(hedefTitle)) {
+    /**
+     * Açık olan pencereler arasında, hedef başlığa (title) sahip olan pencereye geçiş yapar.
+     *
+     * @param hedefTitle Geçiş yapılmak istenen pencerenin tam başlığı.
+     */
+    public static void switchWindowByTitle(String hedefTitle) {
+        Set<String> allWindowHandles = Driver.getDriver().getWindowHandles();
+        for (String eachHandle : allWindowHandles) {
+            Driver.getDriver().switchTo().window(eachHandle);
+            if (Driver.getDriver().getTitle().equals(hedefTitle)) {
                 break;
             }
         }
     }
 
-    public static void getFullScreenshot(WebDriver driver, String screenshotIsmi) {
-        // 1.adim screenshot objesi olusturmak ve deger olarak driver'imizi atamak
-        TakesScreenshot tss = (TakesScreenshot) driver;
+    public static String[][] getExcelData(String dosyaYolu, String sayfaAdi) {
+        String[][] excelData = null;
+        try (FileInputStream fileInputStream = new FileInputStream(dosyaYolu)) {
+            Workbook workbook = WorkbookFactory.create(fileInputStream);
+            Sheet sheet = workbook.getSheet(sayfaAdi);
 
-        // 2.adim screenshot'i kaydedecegimiz File'i olusturun
-        File tumSayfaSS = new File("target/ekranGoruntuleri/" + screenshotIsmi + ".png");
+            int satirSayisi = sheet.getLastRowNum(); // 0'dan başlar, bu yüzden +1'e gerek yok
+            int sutunSayisi = sheet.getRow(0).getLastCellNum();
 
-        // 3.adim screenshot'i alip gecici bir dosyaya kopyalayalim
-        File geciciDosya = tss.getScreenshotAs(OutputType.FILE);
+            excelData = new String[satirSayisi][sutunSayisi];
 
-        // 4.adim gecici dosyayi, asil kaydetmek istedigimiz dosyaya kopyalayalim
-        try {
-            FileUtils.copyFile(geciciDosya, tumSayfaSS);
+            for (int i = 1; i <= satirSayisi; i++) { // i=1, başlık satırını atlamak için
+                for (int j = 0; j < sutunSayisi; j++) {
+                    // Hücre boşsa NullPointerException'ı önlemek için kontrol
+                    if (sheet.getRow(i).getCell(j) != null) {
+                        excelData[i - 1][j] = sheet.getRow(i).getCell(j).toString();
+                    } else {
+                        excelData[i - 1][j] = ""; // Boş hücreler için boş string ata
+                    }
+                }
+            }
+            workbook.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.err.println("Excel dosyası okunurken bir hata oluştu: " + e.getMessage());
+            e.printStackTrace();
         }
+        return excelData;
     }
 
-    public static void getFullScreenshot(WebDriver driver) {
-        // dosya isimlerine tarih etiketi ekleyelim
-        // ... 240829114023 gibi bir etiket eklemek dosya ismini benzersiz yapar
-
-        LocalDateTime zaman = LocalDateTime.now(); // 2024.08.29T11:42:23:123456
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-        String tarihEtiketi = zaman.format(dateTimeFormatter); // 240829114023
-
-        // 1.adim screenshot objesi olusturmak ve deger olarak driver'imizi atamak
-        TakesScreenshot tss = (TakesScreenshot) driver;
-
-        // 2.adim screenshot'i kaydedecegimiz File'i olusturun
-        File tumSayfaSS = new File("target/ekranGoruntuleri/TumSayfaSS_" + tarihEtiketi + ".png");
-
-        // 3.adim screenshot'i alip gecici bir dosyaya kopyalayalim
-        File geciciDosya = tss.getScreenshotAs(OutputType.FILE);
-
-        // 4.adim gecici dosyayi, asil kaydetmek istedigimiz dosyaya kopyalayalim
+    public static List<String> readTxtFileAsList(String dosyaYolu) {
         try {
-            FileUtils.copyFile(geciciDosya, tumSayfaSS);
+            return Files.readAllLines(Paths.get(dosyaYolu));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            System.err.println("TXT dosyası okunurken bir hata oluştu: " + e.getMessage());
+            e.printStackTrace();
+            return Collections.emptyList(); // Hata durumunda boş liste döndürerek NullPointerException'ı önle
         }
-
     }
-
-    public static void getWebelementScreenshot(WebElement istenenWebelement) {
-
-        // tarih etiketi olusturalim
-        LocalDateTime zaman = LocalDateTime.now(); // 2024.08.29T11:42:23:123456
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-        String tarihEtiketi = zaman.format(dateTimeFormatter); // 240829114023
-
-
-        // 1.adim kullanacagimiz WebElementi locate edip kaydedin
-
-        // 2.adim kaydedeceginiz dosyayi olusturun
-        File webelementSS = new File("target/ekranGoruntuleri/webelementSS_" + tarihEtiketi + ".png");
-
-        // 3.adim webelementi kullanarak screenshot'i alip gecici dosyaya kaydedin
-        File geciciDosya = istenenWebelement.getScreenshotAs(OutputType.FILE);
-
-        // 4.adim gecici dosyayi asil dosyaya kopyalayalim
-        try {
-            FileUtils.copyFile(geciciDosya, webelementSS);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    public static void getWebelementScreenshot(WebElement istenenWebelement, String resimIsmi) {
-
-        // tarih etiketi olusturalim
-        LocalDateTime zaman = LocalDateTime.now(); // 2024.08.29T11:42:23:123456
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyMMddHHmmss");
-        String tarihEtiketi = zaman.format(dateTimeFormatter); // 240829114023
-
-
-        // 1.adim kullanacagimiz WebElementi locate edip kaydedin
-
-        // 2.adim kaydedeceginiz dosyayi olusturun
-        File webelementSS = new File("target/ekranGoruntuleri/" + resimIsmi + "_" + tarihEtiketi + ".png");
-
-        // 3.adim webelementi kullanarak screenshot'i alip gecici dosyaya kaydedin
-        File geciciDosya = istenenWebelement.getScreenshotAs(OutputType.FILE);
-
-        // 4.adim gecici dosyayi asil dosyaya kopyalayalim
-        try {
-            FileUtils.copyFile(geciciDosya, webelementSS);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
     public static String getScreenshot(String name) throws IOException {
         // naming the screenshot with the current date to avoid duplication
         String date = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
@@ -184,104 +215,45 @@ public class ReusableMethods {
         FileUtils.copyFile(source, finalDestination);
         return target;
     }
+    public class BulXpath {
 
-    // ========================WEBELEMENT SCREENSHOT METHODU========================================
-    // ========================EN KULLANIŞLI METHOD 187-214 ARASI ========================================
-    public static void getWebElementScreenshot(WebElement element, String fileName) {
-        try {
 
-            // methodu çağırmak için
-            // ReusableMethods.getWebElementScreenshot(testotomasyonuPage.aramaKutusu, "arama_kutusu");
-            // 1. Adım: Zaman damgası oluşturarak eşsiz bir dosya adı sağlıyoruz.
-            String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-            String finalFileName = fileName + "_" + timeStamp + ".png";
+        public static void printXpathFormulas(WebElement element) {
+            System.out.println("Metin (getText()): " + element.getText());
+            System.out.println("Tag adı: " + element.getTagName());
+            System.out.println("ID attribute: " + element.getAttribute("id"));
+            System.out.println("Class attribute: " + element.getAttribute("class"));
+            System.out.println("Placeholder attribute: " + element.getAttribute("placeholder"));
 
-            // 2. Adım: Kaydedilecek klasör yolunu ve dosya yolunu belirliyoruz.
-            String directoryPath = "C:/Users/Hp/OneDrive/Desktop/testNG";
-            Path fullPath = Paths.get(directoryPath, finalFileName);
+            // XPath formülleri
+            String tag = element.getTagName();
+            String id = element.getAttribute("id");
+            String classAttr = element.getAttribute("class");
+            String placeholder = element.getAttribute("placeholder");
+            String name = element.getAttribute("name");
 
-            // 3. Adım: Eğer belirtilen klasör yoksa, onu oluşturuyoruz.
-            Files.createDirectories(Paths.get(directoryPath));
-
-            // 4. Adım: WebElement'in ekran görüntüsünü alıyoruz.
-            File sourceFile = element.getScreenshotAs(OutputType.FILE);
-
-            // 5. Adım: Aldığımız ekran görüntüsünü hedef dosyamıza kopyalıyoruz.
-            Files.copy(sourceFile.toPath(), fullPath);
-
-            System.out.println("Ekran görüntüsü başarıyla kaydedildi: " + fullPath);
-
-        } catch (IOException e) {
-            System.err.println("Ekran görüntüsü alınırken veya kaydedilirken bir hata oluştu: " + e.getMessage());
-            e.printStackTrace();
-
+            if (id != null && !id.isEmpty()) {
+                System.out.println("//" + tag + "[@id='" + id + "']");
+                System.out.println("//*[@id='" + id + "']");
+                System.out.println("//*[starts-with(@id,'" + id.substring(0, Math.min(3, id.length())) + "')]");
+                System.out.println("//*[contains(@id,'" + id + "')]");
+            }
+            if (classAttr != null && !classAttr.isEmpty()) {
+                System.out.println("//" + tag + "[@class='" + classAttr + "']");
+            }
+            if (placeholder != null && !placeholder.isEmpty()) {
+                System.out.println("//" + tag + "[@placeholder='" + placeholder + "']");
+            }
+            if (name != null && !name.isEmpty()) {
+                System.out.println("//" + tag + "[@name='" + name + "']");
+            }
+            // Kombinasyonlar
+            if (id != null && !id.isEmpty() && classAttr != null && !classAttr.isEmpty()) {
+                System.out.println("//" + tag + "[@id='" + id + "' and @class='" + classAttr + "']");
+            }
+            if (id != null && !id.isEmpty() && name != null && !name.isEmpty()) {
+                System.out.println("//" + tag + "[@id='" + id + "' and @name='" + name + "']");
+            }
         }
-    }
-    // ========================EN KULLANIŞLI METHOD 187-214 ARASI ========================================
-
-
-    public static void takeFullPageScreenshot(String fileName) {
-
-        //=========================FULL PAGE SCREENSHOT METHODU========================================
-        // methodu çağırmak için
-        // ReusableMethods.takeFullPageScreenshot("Anasayfa_Ilk_Hali");
-        //===== çok öneli bir method =====
-        try {
-            TakesScreenshot tss = (TakesScreenshot) Driver.getDriver();
-            String timeStamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
-            String finalFileName = fileName + "_" + timeStamp + ".png";
-
-            // ====================================================================
-            // ===> DEĞİŞİKLİK BURADA YAPILDI <===
-            String directoryPath = "C:/Users/Hp/OneDrive/Desktop/testNG";
-            // ====================================================================
-
-            Path fullPath = Paths.get(directoryPath, finalFileName);
-            Files.createDirectories(Paths.get(directoryPath));
-            File sourceFile = tss.getScreenshotAs(OutputType.FILE);
-            Files.copy(sourceFile.toPath(), fullPath);
-            System.out.println("Tam sayfa ekran görüntüsü başarıyla kaydedildi: " + fullPath);
-        } catch (IOException e) {
-            System.err.println("Tam sayfa ekran görüntüsü alınırken bir hata oluştu: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    // =================================================================================
-    // ===> YENİ VE MODERNLEŞTİRİLMİŞ METOT <===
-    // =================================================================================
-
-    /**
-     * Verilen bir WebElement listesindeki her bir elementin metnini alarak
-     * bu metinlerden oluşan bir String listesi döndürür.
-     * Bu işlem Java 8 Stream API kullanılarak daha verimli bir şekilde yapılır.
-     *
-     * @param webElementList Metinleri alınacak WebElement'leri içeren liste.
-     * @return Elementlerin metinlerini içeren yeni bir String listesi.
-     */
-    public static List<String> getElementsText(List<WebElement> webElementList) {
-        return webElementList.stream()                // 1. Listeyi bir akışa (stream) çevir
-                .map(WebElement::getText) // 2. Her bir WebElement'i metnine (.getText()) dönüştür
-                .collect(Collectors.toList()); // 3. Dönüştürülen metinleri bir listede topla
-    }
-
-    public static String raporaResimEkle(String testIsmi) throws IOException {
-
-        LocalDateTime localDateTime = LocalDateTime.now();
-        DateTimeFormatter format = DateTimeFormatter.ofPattern("_yyMMdd_HHmmss");
-        String date = localDateTime.format(format); // _241219_080623
-
-        // 1.adim tss objesi olusturalim
-        //   ve takesScreenshot objesi ile gecici resmi kaydedelim
-        TakesScreenshot takesScreenshot = (TakesScreenshot) Driver.getDriver();
-        File geciciDosya = takesScreenshot.getScreenshotAs(OutputType.FILE);
-
-        // Asil resmi kaydedecegimiz dosya yolunu olusturup
-        // bu dosya yolu ile resmi kaydedecegimiz asil dosyayi olusturalim
-        String dosyaYolu = System.getProperty("user.dir") + "/test-output/Screenshots/" + testIsmi + date + ".jpg";
-        File asilResimDosyasi = new File(dosyaYolu);
-        // gecici dosyayi asil dosyaya kopyalayalim
-        FileUtils.copyFile(geciciDosya, asilResimDosyasi);
-        return dosyaYolu;
     }
 }

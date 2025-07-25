@@ -6,10 +6,10 @@ import org.openqa.selenium.TakesScreenshot;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import pages.TestotomasyonuPage;
-import utilities.BaseTest;
 import utilities.ConfigReader;
 import utilities.Driver;
 import utilities.ReusableMethods;
+import utilities.TestBaseRapor;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +24,7 @@ import java.time.format.DateTimeFormatter;
 //  ReusableMethods.takeFullPageScreenshot("Anasayfa_Ilk_Hali");
 
 
-public class FullScreenShots extends BaseTest {
+public class FullScreenShots extends TestBaseRapor {
 
     @Test
     public void anasayfaTesti(){

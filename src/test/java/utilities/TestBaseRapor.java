@@ -2,51 +2,51 @@ package utilities;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
-import com.aventstack.extentreports.reporter.ExtentSparkReporter;
+import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
 import org.testng.ITestResult;
-import org.testng.annotations.*;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.BeforeTest;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public abstract class TestBaseRapor {
-
-
     protected static ExtentReports extentReports; //extent report'a ilk atamayi yapar
     protected static ExtentTest extentTest; // test pass veya failed gibi bilgileri kaydeder. Ayrica ekran resmi icin de kullaniriz
-    protected static ExtentSparkReporter extentSparkReporter; // Html raporu duzenler
+    protected static ExtentHtmlReporter extentHtmlReporter; // Html raporu duzenler
 
     // Test işlemine başlamadan hemen önce (test methodundan önce değil, tüm test işleminden önce)
     @BeforeTest(alwaysRun = true) // alwaysRun : her zaman çalıştır.
     public void setUpTest() {
         extentReports = new ExtentReports(); // Raporlamayi baslatir
         //rapor oluştuktan sonra raporunuz nereye eklensin istiyorsanız buraya yazıyorsunuz.
-        String date = new SimpleDateFormat("_yyyyMMdd_hhmmss").format(new Date());
+        String date = new SimpleDateFormat("yyyyMMddhhmmss").format(new Date());
         String filePath = System.getProperty("user.dir") + "/test-output/Rapor"+date+".html";
         //oluşturmak istediğimiz raporu (html formatında) başlatıyoruz,
         // filePath ile dosya yolunu belirliyoruz.
         // date class'i ile raporumuza tarih etiketi ekliyoruz
-        extentSparkReporter = new ExtentSparkReporter(filePath);
-        extentReports.attachReporter(extentSparkReporter);
+        extentHtmlReporter = new ExtentHtmlReporter(filePath);
+        extentReports.attachReporter(extentHtmlReporter);
 
         // İstediğiniz bilgileri buraya ekeyebiliyorsunuz.
-        extentReports.setSystemInfo("Enviroment","live");
+        extentReports.setSystemInfo("Enviroment","QA");
         extentReports.setSystemInfo("Browser", ConfigReader.getProperty("browser")); // chrome, firefox
-        extentReports.setSystemInfo("Automation Engineer", "Hamza KAVAS");
-        extentSparkReporter.config().setDocumentTitle("TestNG Test");
-        extentSparkReporter.config().setReportName("Html Reports");
+        extentReports.setSystemInfo("Automation Engineer", "Levent");
+        extentHtmlReporter.config().setDocumentTitle("TestNG Test");
+        extentHtmlReporter.config().setReportName("TestNG Reports");
     }
 
 
-    // Her test methodundan sonra eğer assertion failed olursa, ekran görüntüsü alıp rapora ekliyor
+    // Her test methodundan sonra eğer testte hata varsa, ekran görüntüsü alıp rapora ekliyor
     @AfterMethod(alwaysRun = true)
     public void tearDownMethod(ITestResult result) throws IOException {
 
         if (result.getStatus() == ITestResult.FAILURE) { // eğer testin sonucu başarısızsa
-            String resimYolu = ReusableMethods.raporaResimEkle(result.getName());
+            String screenshotLocation = ReusableMethods.getScreenshot(result.getName());
             extentTest.fail(result.getName());
-            extentTest.addScreenCaptureFromPath(resimYolu);
+            extentTest.addScreenCaptureFromPath(screenshotLocation);
             extentTest.fail(result.getThrowable());
         } else if (result.getStatus() == ITestResult.SKIP) { // eğer test çalıştırılmadan geçilmezse
             extentTest.skip("Test Case is skipped: " + result.getName()); // Ignore olanlar

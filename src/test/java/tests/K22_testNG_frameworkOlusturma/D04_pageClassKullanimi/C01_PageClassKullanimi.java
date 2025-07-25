@@ -4,12 +4,13 @@ import org.openqa.selenium.Keys;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import pages.TestotomasyonuPage;
-import utilities.BaseTest;
 import utilities.ConfigReader;
 import utilities.Driver;
 import utilities.ReusableMethods; // Yeni metodumuzu import ediyoruz
+import utilities.TestBaseRapor;
 
-public class C01_PageClassKullanimi extends BaseTest {
+
+public class C01_PageClassKullanimi extends TestBaseRapor {
 
     // 3 farkli test methodu olusturup, asagidaki gorevleri yapin
     // 1- testotomasyonu anasayfaya gidip url'in testotomasyonu icerdigini test edin

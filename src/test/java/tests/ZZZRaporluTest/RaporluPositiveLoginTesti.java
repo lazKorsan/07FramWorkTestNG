@@ -1,4 +1,4 @@
-package tests.K26_htmlReports;
+package tests.ZZZRaporluTest;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -9,7 +9,7 @@ import utilities.ReusableMethods;
 import utilities.TestBaseRapor;
 
 
-public class C01_RaporluPositiveLoginTesti extends TestBaseRapor {
+public class RaporluPositiveLoginTesti extends TestBaseRapor {
     /*
         TestNG kendisi HTML rapor olusturamaz
 
@@ -41,7 +41,7 @@ public class C01_RaporluPositiveLoginTesti extends TestBaseRapor {
                 "Kullanici gecerli bilgilerle sisteme giris yapabilmeli");
 
         // 1- https://www.testotomasyonu.com/ anasayfasina gidin
-        Driver.getDriver().get(ConfigReader.getProperty("url_testotomasyonu"));
+        Driver.getDriver().get(ConfigReader.getProperty("toUrl"));
         extentTest.info("Kullanici testotomasyonu anasayfaya gider");
 
         // 2- account linkine basin

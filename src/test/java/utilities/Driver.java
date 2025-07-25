@@ -7,7 +7,7 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions; // Firefox için eklendi
-import org.openqa.selenium.opera.OperaDriver;
+
 
 import java.time.Duration;
 
@@ -36,10 +36,7 @@ public class Driver {
                     driverPool.set(new EdgeDriver());
                     break;
 
-                case "opera":
-                    WebDriverManager.operadriver().setup();
-                    driverPool.set(new OperaDriver());
-                    break;
+
 
                 default: // "chrome" veya tanımsız bir değer gelirse
                     WebDriverManager.chromedriver().setup();
