@@ -25,7 +25,7 @@ public class DriverCross {
                         configuration.properties'deki browser degerini alir
      */
 
-    private static WebDriver driver;
+    public static WebDriver driver;
     private DriverCross(){
 
     }

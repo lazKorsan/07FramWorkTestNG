@@ -70,4 +70,7 @@ public class Driver {
             driverPool.remove();
         }
     }
+
+    public static void closeDriver() {
+    }
 }
