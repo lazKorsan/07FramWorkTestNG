@@ -41,7 +41,7 @@ public class RaporluPositiveLoginTesti extends TestBaseRapor {
                 "Kullanici gecerli bilgilerle sisteme giris yapabilmeli");
 
         // 1- https://www.testotomasyonu.com/ anasayfasina gidin
-        Driver.getDriver().get(ConfigReader.getProperty("toUrl"));
+        Driver.getDriver().get(ConfigReader.getProperty("url_testotomasyonu"));
         extentTest.info("Kullanici testotomasyonu anasayfaya gider");
 
         // 2- account linkine basin

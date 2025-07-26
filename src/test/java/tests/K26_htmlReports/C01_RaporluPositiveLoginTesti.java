@@ -50,6 +50,7 @@ public class C01_RaporluPositiveLoginTesti extends TestBaseRapor {
                 .click();
         extentTest.info("account linkine basar");
 
+
         // 3- Kullanici email'i olarak wise@gmail.com girin
         testotomasyonuPage.loginSayfasiEmailKutusu
                 .sendKeys(ConfigReader.getProperty("toGecerliMail"));

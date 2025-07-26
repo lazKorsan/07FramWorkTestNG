@@ -26,9 +26,11 @@ public class TestotomasyonuPage {
     @FindBy(className = "product-count-text")
     public WebElement aramaSonucuElementi;
 
-    // bulunan urunleri bir liste olarak
-    @FindBy(className = "prod-img")
+    @FindBy(xpath = "//*[@*='prod-img']")
     public List<WebElement> bulunanUrunElementleriList;
+
+    // bulunan urunleri bir liste olarak
+
 
     // ilk urune tiklandiginda urun isim elementi
     @FindBy(xpath = "//div[@class=' heading-sm mb-4']")

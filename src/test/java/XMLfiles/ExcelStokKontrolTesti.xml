@@ -1,0 +1,8 @@
+<!-- testng.xml -->
+<suite name="Stok Testi" parallel="methods" thread-count="3">
+    <test name="Stok Kontrol">
+        <classes>
+            <class name="tests.ZZZExcelldenStokKontrolu.ExcelStokKontrolTesti"/>
+        </classes>
+    </test>
+</suite>
